@@ -18,8 +18,8 @@
 - Regression test written: test_factorial_regression.py
 - Regression test failed before patch as expected
 - Patch applied with 2 changed lines
-- Review approved patch with low risk
 - Tests passed after patch
+- Review approved patch with low risk; judge=heuristic-judge score=100
 
 ## Review Checklist
 - patch_generated: pass
@@ -27,6 +27,12 @@
 - regression_test_generated: pass
 - patch_targets_source: pass
 - patch_is_minimal: pass
+
+## LLM-as-Judge
+Provider: heuristic-judge
+Approved: pass
+Score: 100
+Rationale: Patch is approved because it targets source code, includes a regression test, fails before the patch, passes after the patch, and remains minimal.
 
 ## Patch Rationale
 factorial(0) is defined as 1.

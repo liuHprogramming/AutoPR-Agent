@@ -55,11 +55,21 @@ class VerificationResult:
 
 
 @dataclass
+class JudgeResult:
+    provider: str
+    approved: bool
+    score: int
+    rationale: str
+    concerns: list[str] = field(default_factory=list)
+
+
+@dataclass
 class ReviewResult:
     approved: bool
     issues: list[str] = field(default_factory=list)
     checklist: dict[str, bool] = field(default_factory=dict)
     risk_level: str = "low"
+    judge: JudgeResult | None = None
 
 
 @dataclass

@@ -77,6 +77,9 @@ class RunDetail:
     review_issues: list[str]
     review_checklist: dict[str, bool]
     review_risk_level: str | None
+    judge_provider: str | None
+    judge_score: int | None
+    judge_approved: bool | None
 
 
 def selected_symbol_info(state) -> tuple[str | None, str | None]:
@@ -101,6 +104,9 @@ def build_detail(system: str, task: BenchmarkTask, state) -> RunDetail:
         review_issues=list(state.review.issues) if state.review else [],
         review_checklist=dict(state.review.checklist) if state.review else {},
         review_risk_level=state.review.risk_level if state.review else None,
+        judge_provider=state.review.judge.provider if state.review and state.review.judge else None,
+        judge_score=state.review.judge.score if state.review and state.review.judge else None,
+        judge_approved=state.review.judge.approved if state.review and state.review.judge else None,
     )
 
 

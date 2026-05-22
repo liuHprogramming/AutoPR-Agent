@@ -12,13 +12,14 @@ from autopr_agent.agents import (
     TestGenerationAgent,
     VerifierAgent,
 )
+from autopr_agent.judge import PatchJudge
 from autopr_agent.llm import LocalHeuristicModel, ModelProvider
 from autopr_agent.models import RunState
 from autopr_agent.tools import RepoTools
 
 
 class AutoPRWorkflow:
-    def __init__(self, repo_path: Path, model: ModelProvider | None = None) -> None:
+    def __init__(self, repo_path: Path, model: ModelProvider | None = None, judge: PatchJudge | None = None) -> None:
         self.tools = RepoTools(repo_path)
         self.model = model or LocalHeuristicModel()
         self.issue_agent = IssueUnderstandingAgent(self.model)
@@ -26,7 +27,7 @@ class AutoPRWorkflow:
         self.localization_agent = BugLocalizationAgent(self.tools)
         self.test_agent = TestGenerationAgent(self.model, self.tools)
         self.patch_agent = PatchAgent(self.model, self.tools)
-        self.review_agent = ReviewAgent()
+        self.review_agent = ReviewAgent(judge)
         self.verifier_agent = VerifierAgent(self.tools)
         self.reporter_agent = ReporterAgent()
 
@@ -38,7 +39,7 @@ class AutoPRWorkflow:
         self.test_agent.run(state)
         self.verifier_agent.run_before_patch(state)
         self.patch_agent.run(state)
-        self.review_agent.run(state)
         self.verifier_agent.run_after_patch(state)
+        self.review_agent.run(state)
         return state, self.reporter_agent.run(state)
 
