@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import sys
 from typing import Protocol
 
 from autopr_agent.models import IssueAnalysis, PatchPlan, SuspiciousSymbol, TestPlan
@@ -76,7 +77,7 @@ class LocalHeuristicModel:
             return TestPlan(
                 path=symbol.path.parent.parent / "tests" / "test_factorial_regression.py",
                 content=content,
-                command=["python3", "-m", "unittest", "discover", "tests"],
+                command=[sys.executable, "-m", "unittest", "discover", "tests"],
             )
         if "normalize_whitespace" in analysis.keywords or "whitespace" in analysis.keywords:
             content = (
@@ -91,7 +92,7 @@ class LocalHeuristicModel:
             return TestPlan(
                 path=symbol.path.parent.parent / "tests" / "test_whitespace_regression.py",
                 content=content,
-                command=["python3", "-m", "unittest", "discover", "tests"],
+                command=[sys.executable, "-m", "unittest", "discover", "tests"],
             )
         if "unique_preserve_order" in analysis.keywords or ("preserve" in analysis.keywords and "defaults" not in analysis.keywords):
             content = (
@@ -109,7 +110,7 @@ class LocalHeuristicModel:
             return TestPlan(
                 path=symbol.path.parent.parent / "tests" / "test_unique_order_regression.py",
                 content=content,
-                command=["python3", "-m", "unittest", "discover", "tests"],
+                command=[sys.executable, "-m", "unittest", "discover", "tests"],
             )
         if "merge_defaults" in analysis.keywords or "defaults" in analysis.keywords:
             content = (
@@ -128,7 +129,7 @@ class LocalHeuristicModel:
             return TestPlan(
                 path=symbol.path.parent.parent / "tests" / "test_merge_defaults_regression.py",
                 content=content,
-                command=["python3", "-m", "unittest", "discover", "tests"],
+                command=[sys.executable, "-m", "unittest", "discover", "tests"],
             )
         content = (
             "import unittest\n\n\n"
@@ -141,7 +142,7 @@ class LocalHeuristicModel:
         return TestPlan(
             path=symbol.path.parent.parent / "tests" / "test_regression.py",
             content=content,
-            command=["python3", "-m", "unittest", "discover", "tests"],
+            command=[sys.executable, "-m", "unittest", "discover", "tests"],
         )
 
     def draft_patch(self, analysis: IssueAnalysis, symbol: SuspiciousSymbol) -> PatchPlan:
