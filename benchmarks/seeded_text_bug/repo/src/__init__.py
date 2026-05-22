@@ -1,0 +1,1 @@
+"""Seeded text benchmark package."""

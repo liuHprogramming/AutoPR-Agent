@@ -1,0 +1,18 @@
+[project]
+name = "autopr-agent"
+version = "0.1.0"
+description = "Multi-agent code review and patch generation prototype"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+autopr-agent = "autopr_agent.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.ruff]
+line-length = 100
+
