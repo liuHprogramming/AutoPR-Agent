@@ -18,7 +18,10 @@ def _system_line(summary: dict[str, Any], system: str) -> str:
 
 
 def render_project_summary(root: Path) -> str:
-    benchmark = load_report(latest_report_path(root))
+    try:
+        benchmark = load_report(latest_report_path(root))
+    except FileNotFoundError:
+        benchmark = {"summary": {}}
     ablation_path = latest_ablation_path(root)
     ablation = load_ablation(ablation_path) if ablation_path else {"summary": {}}
     summary = benchmark.get("summary", {})
