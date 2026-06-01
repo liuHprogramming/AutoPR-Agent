@@ -54,22 +54,6 @@ Generate stable example artifacts that are suitable for GitHub readers:
 python3 -m autopr_agent.examples
 ```
 
-## Judge Evaluation
-
-Run the reproducible offline judge evaluation:
-
-```bash
-python3 -m autopr_agent.judge_eval
-```
-
-Optionally evaluate an OpenAI-compatible LLM judge on the same labeled cases:
-
-```bash
-OPENAI_API_KEY=... python3 -m autopr_agent.judge_eval \
-  --provider openai-compatible \
-  --model gpt-4.1-mini
-```
-
 ## Documentation Artifacts
 
 Regenerate project docs:
@@ -90,7 +74,6 @@ This approximates the GitHub Actions workflow:
 python3 -m unittest discover tests
 python3 -m autopr_agent.status
 python3 -m autopr_agent.evaluate
-python3 -m autopr_agent.judge_eval
 python3 -m autopr_agent.project_summary
 python3 -m autopr_agent.architecture_doc
 python3 -m autopr_agent.benchmark_catalog

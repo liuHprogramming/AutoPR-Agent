@@ -22,7 +22,6 @@ from autopr_agent.formatting import normalize_diff_paths
 from autopr_agent.history import format_history
 from autopr_agent.indexer import build_index, format_index
 from autopr_agent.judge import HeuristicPatchJudge, OpenAICompatibleJudge, build_judge_payload
-from autopr_agent.judge_eval import evaluate_cases, load_cases, render_report, summarize as summarize_judge_eval
 from autopr_agent.llm import LocalHeuristicModel, ModelProvider
 from autopr_agent.models import IssueAnalysis, PatchPlan, RunState, TestPlan
 from autopr_agent.pr_description import render_pr_description, write_pr_description
@@ -232,19 +231,6 @@ class TestAutoPRWorkflow(unittest.TestCase):
 
         with self.assertRaises(ProviderConfigurationError):
             judge.judge(state, {}, [])
-
-    def test_judge_evaluation_reports_semantic_false_approval(self) -> None:
-        cases = load_cases(ROOT / "data" / "judge_eval_cases.json")
-        results = evaluate_cases(cases, HeuristicPatchJudge())
-        summary = summarize_judge_eval(results)
-        output = render_report("heuristic-judge", results)
-
-        self.assertEqual(summary["total"], 12)
-        self.assertEqual(summary["correct"], 11)
-        self.assertEqual(summary["false_approvals"], 1)
-        self.assertEqual(summary["false_rejections"], 0)
-        self.assertIn("reject-semantic-mismatch", output)
-        self.assertIn("optional LLM judge", output)
 
     def test_ast_localizer_prioritizes_source_symbol(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
