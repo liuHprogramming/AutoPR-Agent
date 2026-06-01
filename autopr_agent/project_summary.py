@@ -51,14 +51,13 @@ def render_project_summary(root: Path) -> str:
         "Single-agent coding assistants often mix retrieval, reasoning, patching, and verification in one loop. In the seeded benchmark suite, the single-agent baseline repeatedly selects test files instead of source files, causing patch attempts to fail before validation.",
         "",
         "## Goal",
-        "AutoPR-Agent aims to turn a bug report into a validated pull-request candidate using specialized agents for issue understanding, code search, AST-based localization, regression-test generation, patching, LLM-as-Judge-style review, verification, and reporting.",
+        "AutoPR-Agent aims to turn a bug report into a validated pull-request candidate using specialized agents for issue understanding, code search, AST-based localization, regression-test generation, patching, review, verification, and reporting.",
         "",
         "## Techniques",
         "- Multi-agent workflow orchestration",
         "- Provider-based LLM abstraction with local and OpenAI-compatible backends",
         "- AST symbol indexing and symbol-ranking localization",
         "- Test-first repair loop with before/after verification",
-        "- LLM-as-Judge-style patch review and risk scoring",
         "- Patch diff tracking and changed-line metrics",
         "- Benchmark, ablation, dashboard, and run-history artifacts",
         "",
@@ -69,7 +68,7 @@ def render_project_summary(root: Path) -> str:
         f"- keyword-file retrieval: {keyword.get('hits', 0)}/{keyword.get('total', 0)} top-1 localization hits",
         "",
         "## CV Bullet",
-        f"Built AutoPR-Agent, a multi-agent code repair system that converts bug reports into validated PR candidates using AST-based code localization, regression-test generation, patch synthesis, LLM-as-Judge-style review, and before/after test verification; on a seeded Python benchmark suite, improved validated repair success from {single_solved}/{single_total} for a single-agent baseline to {auto_solved}/{auto_total} and improved top-1 localization from {keyword_hits}/{keyword_total} keyword retrieval to {ast_hits}/{ast_total} AST-symbol ranking.",
+        f"Built AutoPR-Agent, a multi-agent code repair system that converts bug reports into validated PR candidates using AST-based code localization, regression-test generation, patch synthesis, review, and before/after test verification; on a seeded Python benchmark suite, improved validated repair success from {single_solved}/{single_total} for a single-agent baseline to {auto_solved}/{auto_total} and improved top-1 localization from {keyword_hits}/{keyword_total} keyword retrieval to {ast_hits}/{ast_total} AST-symbol ranking.",
     ]
     return "\n".join(lines) + "\n"
 

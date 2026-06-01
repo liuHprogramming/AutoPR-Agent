@@ -44,17 +44,6 @@ def render_pr_description(state: RunState) -> str:
     if state.review:
         lines.extend(["", "## Review Checklist"])
         lines.extend(f"- {name}: {_status(passed)}" for name, passed in state.review.checklist.items())
-        if state.review.judge:
-            lines.extend([
-                "",
-                "## LLM-as-Judge",
-                f"Provider: {state.review.judge.provider}",
-                f"Approved: {_status(state.review.judge.approved)}",
-                f"Score: {state.review.judge.score}",
-                f"Rationale: {state.review.judge.rationale}",
-            ])
-            if state.review.judge.concerns:
-                lines.extend(f"- concern: {concern}" for concern in state.review.judge.concerns)
         if state.review.issues:
             lines.extend(["", "## Review Issues"])
             lines.extend(f"- {issue}" for issue in state.review.issues)

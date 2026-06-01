@@ -13,9 +13,9 @@ flowchart TD
     Localize --> Test[TestGenerationAgent]
     Test --> Before[VerifierAgent: before patch]
     Before --> Patch[PatchAgent]
-    Patch --> After[VerifierAgent: after patch]
-    After --> Review[ReviewAgent + LLM-as-Judge]
-    Review --> Report[ReporterAgent]
+    Patch --> Review[ReviewAgent]
+    Review --> After[VerifierAgent: after patch]
+    After --> Report[ReporterAgent]
     Report --> PR[Validated PR candidate]
 ```
 """

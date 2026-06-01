@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from autopr_agent.formatting import normalize_diff_paths, relative_to_repo
-from autopr_agent.judge import HeuristicPatchJudge, PatchJudge
 from autopr_agent.llm import LocalHeuristicModel, ModelProvider
 from autopr_agent.models import (
     ReviewResult,
@@ -124,9 +123,6 @@ class PatchAgent:
 
 
 class ReviewAgent:
-    def __init__(self, judge: PatchJudge | None = None) -> None:
-        self.judge = judge or HeuristicPatchJudge()
-
     def run(self, state: RunState) -> None:
         issues: list[str] = []
         checklist = {
@@ -152,19 +148,11 @@ class ReviewAgent:
             issues.append("No regression test was generated.")
         failed_checks = sum(1 for passed in checklist.values() if not passed)
         risk_level = "low" if not issues else "medium" if failed_checks <= 2 else "high"
-        judge_result = self.judge.judge(state, checklist, issues)
-        approved = not issues and judge_result.approved
-        state.review = ReviewResult(
-            approved=approved,
-            issues=issues,
-            checklist=checklist,
-            risk_level=risk_level,
-            judge=judge_result,
-        )
+        state.review = ReviewResult(approved=not issues, issues=issues, checklist=checklist, risk_level=risk_level)
         state.add_event(
-            f"Review approved patch with {risk_level} risk; judge={judge_result.provider} score={judge_result.score}"
+            f"Review approved patch with {risk_level} risk"
             if state.review.approved
-            else f"Review rejected patch with {risk_level} risk; judge={judge_result.provider} score={judge_result.score}"
+            else f"Review rejected patch with {risk_level} risk"
         )
 
 
@@ -222,17 +210,6 @@ class ReporterAgent:
             lines.extend(
                 f"- {name}: {passed}" for name, passed in state.review.checklist.items()
             )
-            if state.review.judge:
-                lines.extend([
-                    "",
-                    "## LLM-as-Judge",
-                    f"Provider: {state.review.judge.provider}",
-                    f"Approved: {state.review.judge.approved}",
-                    f"Score: {state.review.judge.score}",
-                    f"Rationale: {state.review.judge.rationale}",
-                ])
-                if state.review.judge.concerns:
-                    lines.extend(f"- concern: {concern}" for concern in state.review.judge.concerns)
             if state.review.issues:
                 lines.extend(f"- issue: {issue}" for issue in state.review.issues)
         if state.patch_plan:

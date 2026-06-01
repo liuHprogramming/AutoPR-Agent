@@ -9,8 +9,8 @@ Issue: factorial(0) returns 0, but mathematically it should return 1
 - Regression test written: test_factorial_regression.py
 - Regression test failed before patch as expected
 - Patch applied with 2 changed lines
+- Review approved patch with low risk
 - Tests passed after patch
-- Review approved patch with low risk; judge=heuristic-judge score=100
 
 ## Result
 Patch candidate validated by regression tests.
@@ -22,12 +22,6 @@ Risk: low
 - regression_test_generated: True
 - patch_targets_source: True
 - patch_is_minimal: True
-
-## LLM-as-Judge
-Provider: heuristic-judge
-Approved: True
-Score: 100
-Rationale: Patch is approved because it targets source code, includes a regression test, fails before the patch, passes after the patch, and remains minimal.
 
 ## Patch
 File: `src/math_utils.py`

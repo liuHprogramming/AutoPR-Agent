@@ -5,7 +5,6 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from autopr_agent.judge import HeuristicPatchJudge, OpenAICompatibleJudge, PatchJudge
 from autopr_agent.pr_description import write_pr_description
 from autopr_agent.providers.factory import create_provider
 from autopr_agent.models import RunState
@@ -44,22 +43,6 @@ def add_provider_options(parser: argparse.ArgumentParser) -> None:
     )
 
 
-def add_judge_options(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "--judge",
-        choices=["heuristic", "openai-compatible"],
-        default="heuristic",
-        help="patch review judge backend",
-    )
-    parser.add_argument("--judge-model", help="model name for the OpenAI-compatible judge")
-    parser.add_argument("--judge-base-url", help="OpenAI-compatible judge chat completions URL")
-    parser.add_argument(
-        "--judge-api-key-env",
-        default="OPENAI_API_KEY",
-        help="environment variable containing the judge API key",
-    )
-
-
 def add_report_option(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--report-out",
@@ -81,7 +64,6 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("repo", type=Path)
     run_parser.add_argument("--issue", required=True)
     add_provider_options(run_parser)
-    add_judge_options(run_parser)
     run_parser.add_argument(
         "--workdir-copy",
         action="store_true",
@@ -92,27 +74,8 @@ def build_parser() -> argparse.ArgumentParser:
     demo_parser = subparsers.add_parser("demo", help="run a seeded demo on a temporary repo copy")
     demo_parser.add_argument("task", choices=sorted(DEMO_TASKS), nargs="?", default="math")
     add_provider_options(demo_parser)
-    add_judge_options(demo_parser)
     add_report_option(demo_parser)
     return parser
-
-
-def create_judge(
-    judge_name: str,
-    judge_model: str | None,
-    judge_base_url: str | None,
-    judge_api_key_env: str,
-) -> PatchJudge:
-    if judge_name == "heuristic":
-        return HeuristicPatchJudge()
-    if judge_name == "openai-compatible":
-        if not judge_model:
-            raise ValueError("--judge-model is required for --judge openai-compatible")
-        kwargs = {"model": judge_model, "api_key_env": judge_api_key_env}
-        if judge_base_url:
-            kwargs["base_url"] = judge_base_url
-        return OpenAICompatibleJudge(**kwargs)
-    raise ValueError(f"Unknown judge: {judge_name}")
 
 
 def write_report(path: Path, report: str) -> Path:
@@ -128,14 +91,9 @@ def run_workflow(
     model: str | None,
     base_url: str | None,
     api_key_env: str,
-    judge_name: str,
-    judge_model: str | None,
-    judge_base_url: str | None,
-    judge_api_key_env: str,
 ) -> tuple[RunState, str]:
     provider = create_provider(provider_name, model, base_url, api_key_env)
-    judge = create_judge(judge_name, judge_model, judge_base_url, judge_api_key_env)
-    workflow = AutoPRWorkflow(repo, model=provider, judge=judge)
+    workflow = AutoPRWorkflow(repo, model=provider)
     state, report = workflow.run(issue)
     return state, report
 
@@ -147,16 +105,12 @@ def run_on_copy(
     model: str | None,
     base_url: str | None,
     api_key_env: str,
-    judge_name: str,
-    judge_model: str | None,
-    judge_base_url: str | None,
-    judge_api_key_env: str,
 ) -> tuple[RunState, str]:
     with tempfile.TemporaryDirectory() as tmpdir:
         copied_repo = Path(tmpdir) / repo.name
         shutil.copytree(repo, copied_repo)
         print(f"Using temporary repo copy: {copied_repo}")
-        return run_workflow(copied_repo, issue, provider_name, model, base_url, api_key_env, judge_name, judge_model, judge_base_url, judge_api_key_env)
+        return run_workflow(copied_repo, issue, provider_name, model, base_url, api_key_env)
 
 
 def main() -> None:
@@ -170,10 +124,6 @@ def main() -> None:
                 args.model,
                 args.base_url,
                 args.api_key_env,
-                args.judge,
-                args.judge_model,
-                args.judge_base_url,
-                args.judge_api_key_env,
             )
         else:
             state, report = run_workflow(
@@ -183,10 +133,6 @@ def main() -> None:
                 args.model,
                 args.base_url,
                 args.api_key_env,
-                args.judge,
-                args.judge_model,
-                args.judge_base_url,
-                args.judge_api_key_env,
             )
         if args.report_out:
             print(f"Report written: {write_report(args.report_out, report)}")
@@ -208,10 +154,6 @@ def main() -> None:
             args.model,
             args.base_url,
             args.api_key_env,
-            args.judge,
-            args.judge_model,
-            args.judge_base_url,
-            args.judge_api_key_env,
         )
         if args.report_out:
             print(f"Report written: {write_report(args.report_out, report)}")

@@ -1,6 +1,6 @@
 # AutoPR-Agent
 
-AutoPR-Agent is a multi-agent code repair prototype that turns a bug report into a validated pull-request candidate. It splits repair into specialized agents for issue understanding, code search, AST-based localization, regression-test generation, patch synthesis, LLM-as-Judge-style review, verification, and PR-style reporting.
+AutoPR-Agent is a multi-agent code repair prototype that turns a bug report into a validated pull-request candidate. It splits repair into specialized agents for issue understanding, code search, AST-based localization, regression-test generation, patch synthesis, review, verification, and PR-style reporting.
 
 ## Results Snapshot
 
@@ -41,7 +41,7 @@ python3 -m autopr_agent.evaluate
 - LLM-style provider abstraction with local and OpenAI-compatible backends
 - AST symbol indexing and source-file localization
 - Regression-test generation with before/after verification
-- Patch synthesis, LLM-as-Judge review, risk scoring, and diff tracking
+- Patch synthesis, review checklists, risk labels, and diff tracking
 - Baseline comparison, retrieval ablation, dashboard, CI, and reproducible reports
 
 ## Generated Artifacts
@@ -79,7 +79,7 @@ AutoPR-Agent improves reliability by splitting the repair process into specializ
 - Patch synthesis
 - Review
 - Verification
-- PR reporting and LLM-as-Judge scoring
+- PR reporting
 
 ## Goal
 
@@ -103,7 +103,7 @@ This repository starts with a local deterministic MVP:
 - Python-only seeded benchmarks covering math, text, and list utilities
 - multi-agent workflow orchestration
 - tool wrappers for file search, AST symbol indexing, patching, and tests
-- CLI demo with optional OpenAI-compatible judge
+- CLI demo
 - fixture integrity guard to catch accidental benchmark mutation
 
 Later versions can replace the deterministic model with OpenAI, Claude, Qwen, DeepSeek, or a local Ollama model.
@@ -135,14 +135,6 @@ OPENAI_API_KEY=... python3 -m autopr_agent run benchmarks/seeded_math_bug/repo \
   --issue "factorial(0) returns 0, but mathematically it should return 1" \
   --provider openai-compatible \
   --model gpt-4.1-mini
-```
-
-Optional OpenAI-compatible LLM-as-Judge review:
-
-```bash
-OPENAI_API_KEY=... python3 -m autopr_agent demo math \
-  --judge openai-compatible \
-  --judge-model gpt-4.1-mini
 ```
 
 Run the test suite:

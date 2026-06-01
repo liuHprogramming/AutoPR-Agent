@@ -21,7 +21,6 @@ from autopr_agent.fixture_guard import fixture_integrity_errors
 from autopr_agent.formatting import normalize_diff_paths
 from autopr_agent.history import format_history
 from autopr_agent.indexer import build_index, format_index
-from autopr_agent.judge import HeuristicPatchJudge, OpenAICompatibleJudge, build_judge_payload
 from autopr_agent.llm import LocalHeuristicModel, ModelProvider
 from autopr_agent.models import IssueAnalysis, PatchPlan, RunState, TestPlan
 from autopr_agent.pr_description import render_pr_description, write_pr_description
@@ -140,11 +139,10 @@ class TestAutoPRWorkflow(unittest.TestCase):
         self.assertTrue(args.workdir_copy)
 
     def test_cli_parser_accepts_seeded_demo_task(self) -> None:
-        args = build_parser().parse_args(["demo", "text", "--provider", "local", "--judge", "heuristic"])
+        args = build_parser().parse_args(["demo", "text", "--provider", "local"])
 
         self.assertEqual(args.command, "demo")
         self.assertEqual(args.task, "text")
-        self.assertEqual(args.judge, "heuristic")
         self.assertIn("text", DEMO_TASKS)
         self.assertIn("normalize_whitespace", DEMO_TASKS["text"]["issue"])
 
@@ -185,8 +183,6 @@ class TestAutoPRWorkflow(unittest.TestCase):
             self.assertIn("Regression test: `tests/test_factorial_regression.py`", output)
             self.assertIn("Tests passed after patch: pass", output)
             self.assertIn("## Diff", output)
-            self.assertIn("## LLM-as-Judge", output)
-            self.assertIn("Provider: heuristic-judge", output)
             self.assertIn("--- src/math_utils.py", output)
             self.assertNotIn(str(repo), output)
 
@@ -224,13 +220,6 @@ class TestAutoPRWorkflow(unittest.TestCase):
 
         with self.assertRaises(ProviderConfigurationError):
             provider.analyze_issue("factorial(0) returns 0")
-
-    def test_openai_compatible_judge_requires_api_key(self) -> None:
-        judge = OpenAICompatibleJudge(model="example-model", api_key_env="AUTOPR_TEST_MISSING_KEY")
-        state = RunState(repo_path=MATH_BENCHMARK_REPO, issue_text="factorial(0) returns 0")
-
-        with self.assertRaises(ProviderConfigurationError):
-            judge.judge(state, {}, [])
 
     def test_ast_localizer_prioritizes_source_symbol(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -335,9 +324,6 @@ class TestAutoPRWorkflow(unittest.TestCase):
             self.assertEqual(detail.selected_symbol, "factorial")
             self.assertTrue(detail.patch_diff.startswith("---"))
             self.assertEqual(detail.review_risk_level, "low")
-            self.assertEqual(detail.judge_provider, "heuristic-judge")
-            self.assertEqual(detail.judge_score, 100)
-            self.assertTrue(detail.judge_approved)
             self.assertGreater(len(detail.events), 0)
 
     def test_default_benchmark_tasks_include_dict_bug(self) -> None:
@@ -345,20 +331,6 @@ class TestAutoPRWorkflow(unittest.TestCase):
 
         self.assertIn("seeded_dict_bug", {task.name for task in tasks})
         self.assertEqual(len(tasks), 4)
-
-    def test_heuristic_patch_judge_scores_validated_patch(self) -> None:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            repo = Path(tmpdir) / "repo"
-            shutil.copytree(MATH_BENCHMARK_REPO, repo)
-            state, _ = AutoPRWorkflow(repo).run(
-                "factorial(0) returns 0, but mathematically it should return 1"
-            )
-
-            self.assertIsNotNone(state.review)
-            self.assertIsNotNone(state.review.judge)
-            self.assertEqual(state.review.judge.provider, "heuristic-judge")
-            self.assertEqual(state.review.judge.score, 100)
-            self.assertIn("patch_diff", build_judge_payload(state, state.review.checklist, state.review.issues))
 
     def test_benchmark_run_system_supports_quiet_mode(self) -> None:
         task = BenchmarkTask(
