@@ -10,8 +10,9 @@ AutoPR-Agent is a multi-agent code repair prototype that turns a bug report into
 | AutoPR-Agent multi-agent workflow | 4/4 bugs solved, 4/4 localized |
 | Keyword-file retrieval | 0/4 top-1 localization hits |
 | AST-symbol retrieval | 4/4 top-1 localization hits |
+| Heuristic patch judge | 11/12 labeled review decisions correct; 1 semantic false approval |
 
-Why it matters: the single-agent baseline repeatedly selects test files instead of source files. AutoPR-Agent improves the workflow with AST symbol ranking, test-first validation, patch review, and before/after verification.
+Why it matters: the single-agent baseline repeatedly selects test files instead of source files. AutoPR-Agent improves the workflow with AST symbol ranking, test-first validation, patch review, and before/after verification. A labeled judge evaluation also includes a semantic-mismatch case that structured checks miss, providing a concrete target for optional live LLM-as-Judge experiments.
 
 ## Quick Demo
 
@@ -50,6 +51,7 @@ python3 -m autopr_agent.evaluate
 - [Architecture diagrams](docs/ARCHITECTURE.md)
 - [Benchmark catalog](docs/BENCHMARKS.md)
 - [Experiment results](docs/EXPERIMENTS.md)
+- [Judge evaluation](docs/JUDGE_EVALUATION.md)
 - [Static dashboard](runs/dashboard.html)
 - [Demo run report](runs/demo-report.md)
 - [Generated PR description](runs/PR_DESCRIPTION.md)
@@ -143,6 +145,20 @@ Optional OpenAI-compatible LLM-as-Judge review:
 OPENAI_API_KEY=... python3 -m autopr_agent demo math \
   --judge openai-compatible \
   --judge-model gpt-4.1-mini
+```
+
+Evaluate the offline judge on labeled patch-review cases:
+
+```bash
+python3 -m autopr_agent.judge_eval
+```
+
+Evaluate a live OpenAI-compatible judge on the same cases:
+
+```bash
+OPENAI_API_KEY=... python3 -m autopr_agent.judge_eval \
+  --provider openai-compatible \
+  --model gpt-4.1-mini
 ```
 
 Run the test suite:

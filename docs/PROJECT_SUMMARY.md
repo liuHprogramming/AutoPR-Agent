@@ -23,6 +23,7 @@ AutoPR-Agent aims to turn a bug report into a validated pull-request candidate u
 - autopr-agent: 4/4 solved, 4/4 localized
 - ast-symbol retrieval: 4/4 top-1 localization hits
 - keyword-file retrieval: 0/4 top-1 localization hits
+- heuristic judge: 11/12 labeled review decisions correct with 1 semantic false approval
 
 ## CV Bullet
-Built AutoPR-Agent, a multi-agent code repair system that converts bug reports into validated PR candidates using AST-based code localization, regression-test generation, patch synthesis, LLM-as-Judge-style review, and before/after test verification; on a seeded Python benchmark suite, improved validated repair success from 0/4 for a single-agent baseline to 4/4 and improved top-1 localization from 0/4 keyword retrieval to 4/4 AST-symbol ranking.
+Built AutoPR-Agent, a multi-agent code repair system that converts bug reports into validated PR candidates using AST-based code localization, regression-test generation, patch synthesis, LLM-as-Judge-style review, and before/after test verification; on a seeded Python benchmark suite, improved validated repair success from 0/4 for a single-agent baseline to 4/4 and improved top-1 localization from 0/4 keyword retrieval to 4/4 AST-symbol ranking; added a labeled LLM-as-Judge evaluation harness that exposes semantic review failures missed by deterministic checks.

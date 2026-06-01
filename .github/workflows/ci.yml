@@ -29,6 +29,9 @@ jobs:
       - name: Run deterministic evaluation
         run: python -m autopr_agent.evaluate
 
+      - name: Evaluate offline patch judge
+        run: python -m autopr_agent.judge_eval
+
       - name: Regenerate documentation artifacts
         run: |
           python -m autopr_agent.project_summary

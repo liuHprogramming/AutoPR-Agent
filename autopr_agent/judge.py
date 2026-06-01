@@ -18,6 +18,9 @@ class PatchJudge(Protocol):
     def judge(self, state: RunState, checklist: dict[str, bool], issues: list[str]) -> JudgeResult:
         ...
 
+    def judge_payload(self, payload: dict[str, Any]) -> JudgeResult:
+        ...
+
 
 def build_judge_payload(state: RunState, checklist: dict[str, bool], issues: list[str]) -> dict[str, Any]:
     patch_file = None
@@ -52,14 +55,19 @@ class HeuristicPatchJudge:
     name: str = "heuristic-judge"
 
     def judge(self, state: RunState, checklist: dict[str, bool], issues: list[str]) -> JudgeResult:
+        return self.judge_payload(build_judge_payload(state, checklist, issues))
+
+    def judge_payload(self, payload: dict[str, Any]) -> JudgeResult:
+        checklist = payload.get("checklist", {})
+        issues = list(payload.get("deterministic_review_issues", []))
         score = 100
         score -= 20 * sum(1 for passed in checklist.values() if not passed)
-        if state.verification_before is None or state.verification_before.passed:
+        if not payload.get("regression_failed_before_patch", False):
             score -= 15
-        if state.verification_after is None or not state.verification_after.passed:
+        if not payload.get("tests_passed_after_patch", False):
             score -= 30
         score = max(score, 0)
-        approved = score >= 80 and not issues
+        approved = score >= 90 and not issues
         rationale = (
             "Patch is approved because it targets source code, includes a regression test, "
             "fails before the patch, passes after the patch, and remains minimal."
@@ -71,7 +79,7 @@ class HeuristicPatchJudge:
             approved=approved,
             score=score,
             rationale=rationale,
-            concerns=list(issues),
+            concerns=issues,
         )
 
 
@@ -122,7 +130,10 @@ class OpenAICompatibleJudge:
         return json.loads(data["choices"][0]["message"]["content"])
 
     def judge(self, state: RunState, checklist: dict[str, bool], issues: list[str]) -> JudgeResult:
-        data = self._chat_json(build_judge_payload(state, checklist, issues))
+        return self.judge_payload(build_judge_payload(state, checklist, issues))
+
+    def judge_payload(self, payload: dict[str, Any]) -> JudgeResult:
+        data = self._chat_json(payload)
         return JudgeResult(
             provider=self.name,
             approved=bool(data["approved"]),

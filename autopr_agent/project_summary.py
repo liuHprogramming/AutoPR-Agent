@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from autopr_agent.ablation import latest_ablation_path, load_ablation
+from autopr_agent.judge import HeuristicPatchJudge
+from autopr_agent.judge_eval import evaluate_cases, load_cases, summarize as summarize_judge_eval
 from autopr_agent.report import latest_report_path, load_report
 
 
@@ -29,6 +31,8 @@ def render_project_summary(root: Path) -> str:
 
     ast = ablation_summary.get("ast-symbol", {})
     keyword = ablation_summary.get("keyword-file", {})
+    judge_cases = load_cases(root / "data" / "judge_eval_cases.json")
+    judge_summary = summarize_judge_eval(evaluate_cases(judge_cases, HeuristicPatchJudge()))
 
     single = summary.get("single-agent", {})
     auto = summary.get("autopr-agent", {})
@@ -67,9 +71,10 @@ def render_project_summary(root: Path) -> str:
         f"- {_system_line(summary, 'autopr-agent')}",
         f"- ast-symbol retrieval: {ast.get('hits', 0)}/{ast.get('total', 0)} top-1 localization hits",
         f"- keyword-file retrieval: {keyword.get('hits', 0)}/{keyword.get('total', 0)} top-1 localization hits",
+        f"- heuristic judge: {judge_summary['correct']}/{judge_summary['total']} labeled review decisions correct with {judge_summary['false_approvals']} semantic false approval",
         "",
         "## CV Bullet",
-        f"Built AutoPR-Agent, a multi-agent code repair system that converts bug reports into validated PR candidates using AST-based code localization, regression-test generation, patch synthesis, LLM-as-Judge-style review, and before/after test verification; on a seeded Python benchmark suite, improved validated repair success from {single_solved}/{single_total} for a single-agent baseline to {auto_solved}/{auto_total} and improved top-1 localization from {keyword_hits}/{keyword_total} keyword retrieval to {ast_hits}/{ast_total} AST-symbol ranking.",
+        f"Built AutoPR-Agent, a multi-agent code repair system that converts bug reports into validated PR candidates using AST-based code localization, regression-test generation, patch synthesis, LLM-as-Judge-style review, and before/after test verification; on a seeded Python benchmark suite, improved validated repair success from {single_solved}/{single_total} for a single-agent baseline to {auto_solved}/{auto_total} and improved top-1 localization from {keyword_hits}/{keyword_total} keyword retrieval to {ast_hits}/{ast_total} AST-symbol ranking; added a labeled LLM-as-Judge evaluation harness that exposes semantic review failures missed by deterministic checks.",
     ]
     return "\n".join(lines) + "\n"
 
